@@ -38,7 +38,7 @@ void addToContainer(UniversalContainer*& head, void* element) {
 }
 
 void* removeFromContainer(UniversalContainer*& head) {
-    if (!head) return nullptr;
+    if (head == nullptr) return nullptr;
     void* result = head->element;
     UniversalContainer* temp = head;
     head = head->next;
@@ -151,7 +151,7 @@ SimpleNode* constructFromString(const string& input, int& position, bool& isVali
         else {
             node->right = constructFromString(input, position, isValid);
             if (!isValid) {
-                delete node->left;
+                if (node->left != nullptr) delete node->left;
                 delete node;
                 return nullptr;
             }
@@ -165,8 +165,8 @@ SimpleNode* constructFromString(const string& input, int& position, bool& isVali
 
     if (position >= input.length() || input[position] != ')') {
         isValid = false;
-        if (node->left) delete node->left;
-        if (node->right) delete node->right;
+        if (node->left != nullptr) delete node->left;
+        if (node->right != nullptr) delete node->right;
         delete node;
         return nullptr;
     }
@@ -176,24 +176,24 @@ SimpleNode* constructFromString(const string& input, int& position, bool& isVali
 }
 
 void recursiveTraversal(SimpleNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
     cout << root->key << " ";
     recursiveTraversal(root->left);
     recursiveTraversal(root->right);
 }
 
 void iterativeTraversal(SimpleNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
 
     UniversalContainer* container = nullptr;
     addToContainer(container, root);
 
-    while (container) {
+    while (container != nullptr) {
         SimpleNode* current = (SimpleNode*)removeFromContainer(container);
         cout << current->key << " ";
 
-        if (current->right) addToContainer(container, current->right);
-        if (current->left) addToContainer(container, current->left);
+        if (current->right != nullptr) addToContainer(container, current->right);
+        if (current->left != nullptr) addToContainer(container, current->left);
     }
 }
 
@@ -201,10 +201,10 @@ void rotateLeftSide(ColoredNode*& root, ColoredNode* node) {
     ColoredNode* right_child = node->right;
     node->right = right_child->left;
 
-    if (right_child->left) right_child->left->parent = node;
+    if (right_child->left != nullptr) right_child->left->parent = node;
     right_child->parent = node->parent;
 
-    if (!node->parent) root = right_child;
+    if (node->parent == nullptr) root = right_child;
     else if (node == node->parent->left) node->parent->left = right_child;
     else node->parent->right = right_child;
 
@@ -216,10 +216,10 @@ void rotateRightSide(ColoredNode*& root, ColoredNode* node) {
     ColoredNode* left_child = node->left;
     node->left = left_child->right;
 
-    if (left_child->right) left_child->right->parent = node;
+    if (left_child->right != nullptr) left_child->right->parent = node;
     left_child->parent = node->parent;
 
-    if (!node->parent) root = left_child;
+    if (node->parent == nullptr) root = left_child;
     else if (node == node->parent->right) node->parent->right = left_child;
     else node->parent->left = left_child;
 
@@ -232,7 +232,7 @@ void balanceAfterInsert(ColoredNode*& root, ColoredNode* node) {
         if (node->parent == node->parent->parent->left) {
             ColoredNode* uncle = node->parent->parent->right;
 
-            if (uncle && uncle->color_flag) {
+            if (uncle != nullptr && uncle->color_flag) {
                 node->parent->color_flag = false;
                 uncle->color_flag = false;
                 node->parent->parent->color_flag = true;
@@ -251,7 +251,7 @@ void balanceAfterInsert(ColoredNode*& root, ColoredNode* node) {
         else {
             ColoredNode* uncle = node->parent->parent->left;
 
-            if (uncle && uncle->color_flag) {
+            if (uncle != nullptr && uncle->color_flag) {
                 node->parent->color_flag = false;
                 uncle->color_flag = false;
                 node->parent->parent->color_flag = true;
@@ -274,7 +274,7 @@ void balanceAfterInsert(ColoredNode*& root, ColoredNode* node) {
 ColoredNode* insertColored(ColoredNode* root, int value) {
     ColoredNode* new_node = new ColoredNode{ value, nullptr, nullptr, nullptr, true };
 
-    if (!root) {
+    if (root == nullptr) {
         new_node->color_flag = false;
         return new_node;
     }
@@ -282,7 +282,7 @@ ColoredNode* insertColored(ColoredNode* root, int value) {
     ColoredNode* parent = nullptr;
     ColoredNode* current = root;
 
-    while (current) {
+    while (current != nullptr) {
         parent = current;
         if (value < current->key) current = current->left;
         else if (value > current->key) current = current->right;
@@ -302,7 +302,7 @@ ColoredNode* insertColored(ColoredNode* root, int value) {
 
 bool findInColored(ColoredNode* root, int value) {
     ColoredNode* current = root;
-    while (current) {
+    while (current != nullptr) {
         if (value == current->key) return true;
         if (value < current->key) current = current->left;
         else current = current->right;
@@ -311,14 +311,14 @@ bool findInColored(ColoredNode* root, int value) {
 }
 
 ColoredNode* findMinColored(ColoredNode* node) {
-    while (node && node->left) {
+    while (node != nullptr && node->left != nullptr) {
         node = node->left;
     }
     return node;
 }
 
 ColoredNode* transplantColored(ColoredNode* root, ColoredNode* u, ColoredNode* v) {
-    if (!u->parent) {
+    if (u->parent == nullptr) {
         root = v;
     }
     else if (u == u->parent->left) {
@@ -327,35 +327,35 @@ ColoredNode* transplantColored(ColoredNode* root, ColoredNode* u, ColoredNode* v
     else {
         u->parent->right = v;
     }
-    if (v) v->parent = u->parent;
+    if (v != nullptr) v->parent = u->parent;
     return root;
 }
 
 void fixDeleteColored(ColoredNode*& root, ColoredNode* x) {
-    while (x && x != root && !x->color_flag) {
+    while (x != nullptr && x != root && !x->color_flag) {
         if (x == x->parent->left) {
             ColoredNode* w = x->parent->right;
-            if (w && w->color_flag) {
+            if (w != nullptr && w->color_flag) {
                 w->color_flag = false;
                 x->parent->color_flag = true;
                 rotateLeftSide(root, x->parent);
                 w = x->parent->right;
             }
-            if (w && (!w->left || !w->left->color_flag) && (!w->right || !w->right->color_flag)) {
+            if (w != nullptr && (w->left == nullptr || !w->left->color_flag) && (w->right == nullptr || !w->right->color_flag)) {
                 w->color_flag = true;
                 x = x->parent;
             }
             else {
-                if (w && (!w->right || !w->right->color_flag)) {
-                    if (w->left) w->left->color_flag = false;
+                if (w != nullptr && (w->right == nullptr || !w->right->color_flag)) {
+                    if (w->left != nullptr) w->left->color_flag = false;
                     w->color_flag = true;
                     rotateRightSide(root, w);
                     w = x->parent->right;
                 }
-                if (w) {
+                if (w != nullptr) {
                     w->color_flag = x->parent->color_flag;
                     x->parent->color_flag = false;
-                    if (w->right) w->right->color_flag = false;
+                    if (w->right != nullptr) w->right->color_flag = false;
                     rotateLeftSide(root, x->parent);
                 }
                 x = root;
@@ -363,58 +363,58 @@ void fixDeleteColored(ColoredNode*& root, ColoredNode* x) {
         }
         else {
             ColoredNode* w = x->parent->left;
-            if (w && w->color_flag) {
+            if (w != nullptr && w->color_flag) {
                 w->color_flag = false;
                 x->parent->color_flag = true;
                 rotateRightSide(root, x->parent);
                 w = x->parent->left;
             }
-            if (w && (!w->right || !w->right->color_flag) && (!w->left || !w->left->color_flag)) {
+            if (w != nullptr && (w->right == nullptr || !w->right->color_flag) && (w->left == nullptr || !w->left->color_flag)) {
                 w->color_flag = true;
                 x = x->parent;
             }
             else {
-                if (w && (!w->left || !w->left->color_flag)) {
-                    if (w->right) w->right->color_flag = false;
+                if (w != nullptr && (w->left == nullptr || !w->left->color_flag)) {
+                    if (w->right != nullptr) w->right->color_flag = false;
                     w->color_flag = true;
                     rotateLeftSide(root, w);
                     w = x->parent->left;
                 }
-                if (w) {
+                if (w != nullptr) {
                     w->color_flag = x->parent->color_flag;
                     x->parent->color_flag = false;
-                    if (w->left) w->left->color_flag = false;
+                    if (w->left != nullptr) w->left->color_flag = false;
                     rotateRightSide(root, x->parent);
                 }
                 x = root;
             }
         }
     }
-    if (x) x->color_flag = false;
+    if (x != nullptr) x->color_flag = false;
 }
 
 ColoredNode* deleteColored(ColoredNode* root, int key) {
-    if (!root) return nullptr;
+    if (root == nullptr) return nullptr;
 
     ColoredNode* z = root;
     ColoredNode* y = nullptr;
     ColoredNode* x = nullptr;
 
-    while (z) {
+    while (z != nullptr) {
         if (key == z->key) break;
         else if (key < z->key) z = z->left;
         else z = z->right;
     }
 
-    if (!z) return root;
+    if (z == nullptr) return root;
 
     bool original_color = z->color_flag;
 
-    if (!z->left) {
+    if (z->left == nullptr) {
         x = z->right;
         root = transplantColored(root, z, z->right);
     }
-    else if (!z->right) {
+    else if (z->right == nullptr) {
         x = z->left;
         root = transplantColored(root, z, z->left);
     }
@@ -424,17 +424,17 @@ ColoredNode* deleteColored(ColoredNode* root, int key) {
         x = y->right;
 
         if (y->parent == z) {
-            if (x) x->parent = y;
+            if (x != nullptr) x->parent = y;
         }
         else {
             root = transplantColored(root, y, y->right);
             y->right = z->right;
-            if (y->right) y->right->parent = y;
+            if (y->right != nullptr) y->right->parent = y;
         }
 
         root = transplantColored(root, z, y);
         y->left = z->left;
-        if (y->left) y->left->parent = y;
+        if (y->left != nullptr) y->left->parent = y;
         y->color_flag = z->color_flag;
     }
 
@@ -448,7 +448,7 @@ ColoredNode* deleteColored(ColoredNode* root, int key) {
 }
 
 void levelOrderTraversal(ColoredNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
 
     ColorQueue* queue = createColorQueue(100);
     addToQueue(queue, root);
@@ -457,12 +457,12 @@ void levelOrderTraversal(ColoredNode* root) {
         ColoredNode* current = removeFromQueue(queue);
 
         if (current->color_flag)
-            cout << "\033[1;31m" << current->key << "\033[0m ";
+            cout << current->key << "R ";
         else
-            cout << "\033[1;30m" << current->key << "\033[0m ";
+            cout << current->key << "B ";
 
-        if (current->left) addToQueue(queue, current->left);
-        if (current->right) addToQueue(queue, current->right);
+        if (current->left != nullptr) addToQueue(queue, current->left);
+        if (current->right != nullptr) addToQueue(queue, current->right);
     }
 
     delete[] queue->elements;
@@ -470,21 +470,21 @@ void levelOrderTraversal(ColoredNode* root) {
 }
 
 void preorderColored(ColoredNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
 
     UniversalContainer* container = nullptr;
     addToContainer(container, root);
 
-    while (container) {
+    while (container != nullptr) {
         ColoredNode* current = (ColoredNode*)removeFromContainer(container);
 
         if (current->color_flag)
-            cout << "\033[1;31m" << current->key << "\033[0m ";
+            cout << current->key << "R ";
         else
-            cout << "\033[1;30m" << current->key << "\033[0m ";
+            cout << current->key << "B ";
 
-        if (current->right) addToContainer(container, current->right);
-        if (current->left) addToContainer(container, current->left);
+        if (current->right != nullptr) addToContainer(container, current->right);
+        if (current->left != nullptr) addToContainer(container, current->left);
     }
 }
 
@@ -492,8 +492,8 @@ void inorderColored(ColoredNode* root) {
     UniversalContainer* container = nullptr;
     ColoredNode* current = root;
 
-    while (current || container) {
-        while (current) {
+    while (current != nullptr || container != nullptr) {
+        while (current != nullptr) {
             addToContainer(container, current);
             current = current->left;
         }
@@ -501,66 +501,66 @@ void inorderColored(ColoredNode* root) {
         current = (ColoredNode*)removeFromContainer(container);
 
         if (current->color_flag)
-            cout << "\033[1;31m" << current->key << "\033[0m ";
+            cout << current->key << "R ";
         else
-            cout << "\033[1;30m" << current->key << "\033[0m ";
+            cout << current->key << "B ";
 
         current = current->right;
     }
 }
 
 void postorderColored(ColoredNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
 
     UniversalContainer* container1 = nullptr;
     UniversalContainer* container2 = nullptr;
     addToContainer(container1, root);
 
-    while (container1) {
+    while (container1 != nullptr) {
         ColoredNode* current = (ColoredNode*)removeFromContainer(container1);
         addToContainer(container2, current);
 
-        if (current->left) addToContainer(container1, current->left);
-        if (current->right) addToContainer(container1, current->right);
+        if (current->left != nullptr) addToContainer(container1, current->left);
+        if (current->right != nullptr) addToContainer(container1, current->right);
     }
 
-    while (container2) {
+    while (container2 != nullptr) {
         ColoredNode* current = (ColoredNode*)removeFromContainer(container2);
 
         if (current->color_flag)
-            cout << "\033[1;31m" << current->key << "\033[0m ";
+            cout << current->key << "R ";
         else
-            cout << "\033[1;30m" << current->key << "\033[0m ";
+            cout << current->key << "B ";
     }
 }
 
 ColoredNode* createColoredTree(SimpleNode* root) {
-    if (!root) return nullptr;
+    if (root == nullptr) return nullptr;
 
     ColoredNode* colored_root = nullptr;
     UniversalContainer* container = nullptr;
     addToContainer(container, root);
 
-    while (container) {
+    while (container != nullptr) {
         SimpleNode* current = (SimpleNode*)removeFromContainer(container);
         colored_root = insertColored(colored_root, current->key);
 
-        if (current->right) addToContainer(container, current->right);
-        if (current->left) addToContainer(container, current->left);
+        if (current->right != nullptr) addToContainer(container, current->right);
+        if (current->left != nullptr) addToContainer(container, current->left);
     }
 
     return colored_root;
 }
 
 void freeSimpleTree(SimpleNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
     freeSimpleTree(root->left);
     freeSimpleTree(root->right);
     delete root;
 }
 
 void freeColoredTree(ColoredNode* root) {
-    if (!root) return;
+    if (root == nullptr) return;
     freeColoredTree(root->left);
     freeColoredTree(root->right);
     delete root;
@@ -571,7 +571,7 @@ int main() {
 
     string input_line;
     ifstream input_file("tree.txt");
-    if (input_file) {
+    if (input_file.is_open()) {
         getline(input_file, input_line);
         input_file.close();
         cout << "Data successfully loaded from file" << endl;
@@ -597,7 +597,7 @@ int main() {
     bool isValid = true;
     SimpleNode* simple_tree = constructFromString(input_line, pos, isValid);
 
-    if (!simple_tree || !isValid) {
+    if (simple_tree == nullptr || !isValid) {
         cout << "Error: invalid tree structure" << endl;
         return 1;
     }
@@ -639,7 +639,7 @@ int main() {
     cout << endl;
 
     cout << "SEARCH IN RED-BLACK TREE:" << endl;
-    if (simple_tree) {
+    if (simple_tree != nullptr) {
         int test_value = simple_tree->key;
         cout << "Search " << test_value << ": "
             << (findInColored(colored_tree, test_value) ? "found" : "not found") << endl;
@@ -661,6 +661,5 @@ int main() {
 
     freeSimpleTree(simple_tree);
     freeColoredTree(colored_tree);
-
     return 0;
 }
